@@ -1,3 +1,3 @@
 This is a file transfer tool.
 
-NEW LINE.
+Get or put file only in the data folder.
