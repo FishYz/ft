@@ -1,11 +1,17 @@
 #!/use/bin/env python
 
-from SimpleHTTPServer import HTTPServer
+import BaseHTTPServer
+impoer sys
 
-def run_server():
-    server = HTTPServer()
+
+class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.wfile.write('Hello')
+
+def RunServer(port):
+    server = BaseHTTPServer.HTTPServer(('localhost', port), Handler)
     print 'Enter ctrl+c to stop server'
-    server.serve_forever()
+    BaseHTTPServer.test(SimpleHTTPRequestHandler, BaseHTTPServer.HTTPServer)
 
 if __name__ == '__main__':
-    run_server()
+    RunServer(sys.argv[1])
