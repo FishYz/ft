@@ -5,8 +5,10 @@ import sys
 
 
 class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
+    dataPath = 'data/'
+
     def do_GET(self):
-        self.wfile.write('Hello')
+        self.wfile.write(self.dataPath)
 
 def RunServer(port):
     server = BaseHTTPServer.HTTPServer(('', port), Handler)
