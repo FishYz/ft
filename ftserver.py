@@ -13,14 +13,26 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     """Translate the /-separated path to the local filename """
     def translate_path(self, path):
-        pass
+        path = path.split('?', 1)[0]
+        path = path.split('#', 1)[0]
+        path = posixpath.normpath(urllib.unquote(path))
+        words = path.split('/')
+        words = filter(None, words)
+        path = os.getcwd()
+        for word in words:
+            drive, word = os.path.splitdrive(word)
+            head, word = os.path.split(word)
+            if word in (os.curdir, os.pardir): continue
+            path = os.path.join(path, word)
+        return path
+
 
 
     """Serve the GET request"""
     def do_GET(self):
         self.send_response(200)
         self.end_headers()
-        self.wfile.write("123")
+        self.wfile.write(self.path)
 
 
     """Serve the HEAD request"""
