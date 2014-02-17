@@ -23,7 +23,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
     """Send response code and handler"""
     def send_head(self):
         path = self.translate_path(self.path)
-        return self.list_directory(path)
+        return self.show_page(path)
 
 
     """Translate the /-separated path to the local filename """
@@ -42,8 +42,8 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         return path
 
 
-    """Use to list files in directory"""
-    def list_directory(self, path):
+    """Use to list files and show the upload form"""
+    def show_page(self, path):
         pass
 
 
