@@ -7,6 +7,7 @@ import cgi
 import urllib
 import shutil
 import posixpath
+import mimetypes
 try:
     from cStringIO import StringIO
 except ImportError:
@@ -18,8 +19,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     """Serve the GET request"""
     def do_GET(self):
-        path = self.translate_path(self.path)
-        f = self.show_page(path)
+        f = self.send_head()
         if f:
             shutil.copyfileobj(f, self.wfile)
             f.close()
@@ -27,13 +27,40 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     """Serve the HEAD request"""
     def do_HEAD(self):
-        pass
+        f = self.send_head()
+        if f:
+            f.close()
 
 
     """Send response code and handler"""
     def send_head(self):
         path = self.translate_path(self.path)
-        return self.show_page(path)
+        f = None
+        if os.path.isdir(path):
+            if not self.path.endswith('/'):
+                # redirect browser - doing basically what apache does
+                self.send_response(301)
+                self.send_header("Location", self.path + "/")
+                self.end_headers()
+                return None
+            else:
+                return self.show_page(path)
+        ctype = self.guess_type(path)
+        try:
+            # Always read in binary mode. Opening files in text mode may cause
+            # newline translations, making the actual size of the content
+            # transmitted *less* than the content-length!
+            f = open(path, 'rb')
+        except IOError:
+            self.send_error(404, "File not found")
+            return None
+        self.send_response(200)
+        self.send_header("Content-type", ctype)
+        fs = os.fstat(f.fileno())
+        self.send_header("Content-Length", str(fs[6]))
+        self.send_header("Last-Modified", self.date_time_string(fs.st_mtime))
+        self.end_headers()
+        return f
 
 
     """Translate the /-separated path to the local filename """
@@ -96,6 +123,45 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.end_headers()
         return f
 
+
+    """A method used to copy the contents from source to outputfile"""
+    def copyfile(self, source, outputfile):
+        shutil.copyfileobj(source, outputfile)
+
+    def guess_type(self, path):
+        """Guess the type of a file.
+
+        Argument is a PATH (a filename).
+
+        Return value is a string of the form type/subtype,
+        usable for a MIME Content-type header.
+
+        The default implementation looks the file's extension
+        up in the table self.extensions_map, using application/octet-stream
+        as a default; however it would be permissible (if
+        slow) to look inside the data to make a better guess.
+
+        """
+
+        base, ext = posixpath.splitext(path)
+        if ext in self.extensions_map:
+            return self.extensions_map[ext]
+        ext = ext.lower()
+        if ext in self.extensions_map:
+            return self.extensions_map[ext]
+        else:
+            return self.extensions_map['']
+
+
+    if not mimetypes.inited:
+        mimetypes.init() # try to read system mime.types
+    extensions_map = mimetypes.types_map.copy()
+    extensions_map.update({
+        '': 'application/octet-stream', # Default
+        '.py': 'text/plain',
+        '.c': 'text/plain',
+        '.h': 'text/plain',
+        })
 
 def RunServer(port):
     fileName = os.path.abspath(sys.argv[0])
