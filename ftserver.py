@@ -6,9 +6,24 @@ import os
 
 
 class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
+
+
+    """Serve the GET request"""
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(self.path)
+
+
+    """Serve the HEAD request"""
+    def do_HEAD(self):
+        pass
+
+
     """Send response code and handler"""
     def send_head(self):
-        pass
+        path = self.translate_path(self.path)
+        return self.list_directory(path)
 
 
     """Translate the /-separated path to the local filename """
@@ -26,18 +41,6 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
             path = os.path.join(path, word)
         return path
 
-
-
-    """Serve the GET request"""
-    def do_GET(self):
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(self.path)
-
-
-    """Serve the HEAD request"""
-    def do_HEAD(self):
-        pass
 
 def RunServer(port):
     fileName = os.path.abspath(sys.argv[0])
