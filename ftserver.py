@@ -42,6 +42,11 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         return path
 
 
+    """Use to list files in directory"""
+    def list_directory(self, path):
+        pass
+
+
 def RunServer(port):
     fileName = os.path.abspath(sys.argv[0])
     filePath = os.path.dirname(fileName)
