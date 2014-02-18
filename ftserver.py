@@ -1,4 +1,5 @@
 #!/use/bin/env python
+#coding=utf-8
 
 import BaseHTTPServer
 import sys
@@ -159,8 +160,29 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         f = StringIO()
         displaypath = cgi.escape(urllib.unquote(self.path))
         f.write('<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">')
-        f.write('<html>\n<title>Directory listing for %s</title>\n' % displaypath)
+        f.write('<html>\n<head>\n<title>Directory listing for %s</title>\n' % displaypath)
+        f.write("""<style>
+		#section{font-family: "Georgia", "微软雅黑", "华文中宋";}
+        .container{display:inline-block;min-height:200px;min-width:360px;color:#f30;padding:30px;border:3px solid #ddd;-moz-border-radius:10px;-webkit-border-radius:10px;border-radius:10px;}
+		.preview{max-width:360px;}
+		#files-list{position:absolute;top:0;left:500px;}
+		#list{width:460px;}
+		#list .preview{max-width:250px;}
+		#list p{color:#888;font-size:12px;}
+		#list .green{color:#09c;}
+    </style>""")
+    	f.write('</head>')    		
         f.write('<body>\n<h2>Directory listing for %s</h2>\n' % displaypath)
+        f.write("""<div id="section">
+        <p>把你的文件拖到下面的容器内：</p>
+        <div id="container" class="container">
+            
+        </div>
+		<div id ="files-list">
+			<p>已经拖进过来的文件：</p>
+			<ul id="list"></ul>
+		</div>
+    </div>""")
         f.write('<form method="post"')
         f.write('enctype="multipart/form-data">')
         f.write('<label for="file">Filename:</label>')
@@ -169,6 +191,115 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         f.write('<input type="submit" name="submit" value="Submit" />')
         f.write('</form>')
         f.write('<hr>\n<ul>\n')
+        f.write("""<script>
+	var progressBarZone = document.getElementById('container');
+
+function sendFile(files) {
+       if (!files || files.length < 1) {
+             return;
+      }
+      
+       var percent = document.createElement('div' );
+      progressBarZone.appendChild(percent);
+      
+       var fileNames = '' ;
+       
+       var formData = new FormData();             // 创建一个表单对象FormData      
+       for ( var i = 0; i < files.length; i++) {
+             var file = files[i];    // file 对象有 name, size 属性
+            
+            formData.append( 'file' , file);       // 往FormData对象添加File对象
+            
+            fileNames += '《' + file.name + '》, ' ;
+      }
+      
+       var xhr = new XMLHttpRequest();
+      xhr.upload.addEventListener( 'progress',
+             function uploadProgress(evt) {
+                   // evt 有三个属性：
+                   // lengthComputable – 可计算的已上传字节数
+                   // total – 总的字节数
+                   // loaded – 到目前为止上传的字节数
+                   if (evt.lengthComputable) {
+                        percent.innerHTML = fileNames + ' upload percent :' + Math.round((evt.loaded / evt.total)  * 100) + '%' ;
+                  }
+            }, false); // false表示在事件冒泡阶段处理
+
+      xhr.upload.onload = function() {
+            percent.innerHTML = fileNames + '上传完成。' ;
+      };
+
+      xhr.upload.onerror = function(e) {
+            percent.innerHTML = fileNames + ' 上传失败。' ;
+      };
+
+      formData.append( 'submit', '中文' );  // 往表单对象添加文本字段
+      xhr.open( 'post', '/' , true);
+      xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+      xhr.send(formData);            // 发送表单对象。
+}
+
+	if (window.FileReader) {
+
+		var list = document.getElementById('list'),
+			cnt = document.getElementById('container');
+
+
+
+		// 处理拖放文件列表
+		function handleFileSelect(evt) {
+			evt.stopPropagation();
+			evt.preventDefault();
+
+			var files = evt.dataTransfer.files;
+				sendFile(files)
+			for (var i = 0, f; f = files[i]; i++) {
+
+				var t = f.type ? f.type : 'n/a',
+					reader = new FileReader(),
+					looks = function (f) {
+						list.innerHTML += '<li><strong>' + f.name + '</strong> (' + t +
+							') - ' + f.size+ ' bytes' + '</li>';
+						
+					};
+
+				// 处理得到的文件
+				if (true) {
+					reader.onload = (function (theFile) {
+						return function (e) {
+							
+							looks(theFile);
+						};
+					})(f)
+					reader.readAsDataURL(f);
+				} 
+
+			}
+
+		}
+		
+		// 处理插入拖出效果
+		function handleDragEnter(evt){ this.setAttribute('style', 'border-style:dashed;'); }
+		function handleDragLeave(evt){ this.setAttribute('style', ''); }
+
+		// 处理文件拖入事件，防止浏览器默认事件带来的重定向
+		function handleDragOver(evt) {
+			evt.stopPropagation();
+			evt.preventDefault();
+		}
+		
+		cnt.addEventListener('dragenter', handleDragEnter, false);
+		cnt.addEventListener('dragover', handleDragOver, false);
+		cnt.addEventListener('drop', handleFileSelect, false);
+		cnt.addEventListener('dragleave', handleDragLeave, false);
+		
+	} 
+	
+	else {
+		document.getElementById('section').innerHTML = '你的浏览器不支持啊，同学';
+	}
+	
+	</script>""")
         for name in list:
             fullname = os.path.join(path, name)
             displayname = linkname = name
