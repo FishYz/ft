@@ -1,5 +1,4 @@
 #!/use/bin/env python
-#coding=utf-8
 
 import BaseHTTPServer
 import sys
@@ -162,7 +161,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         f.write('<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">')
         f.write('<html>\n<head>\n<title>Directory listing for %s</title>\n' % displaypath)
         f.write("""<style>
-		#section{font-family: "Georgia", "微软雅黑", "华文中宋";}
+		#section{font-family: "Georgia", "Microsoft YaHei", "FangSong";}
         .container{display:inline-block;min-height:200px;min-width:360px;color:#f30;padding:30px;border:3px solid #ddd;-moz-border-radius:10px;-webkit-border-radius:10px;border-radius:10px;}
 		.preview{max-width:360px;}
 		#files-list{position:absolute;top:0;left:500px;}
@@ -174,12 +173,12 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
     	f.write('</head>')    		
         f.write('<body>\n<h2>Directory listing for %s</h2>\n' % displaypath)
         f.write("""<div id="section">
-        <p>把你的文件拖到下面的容器内：</p>
+        <p>Please put your file in container: </p>
         <div id="container" class="container">
             
         </div>
 		<div id ="files-list">
-			<p>已经拖进过来的文件：</p>
+			<p>the draged files:</p>
 			<ul id="list"></ul>
 		</div>
     </div>""")
@@ -204,39 +203,39 @@ function sendFile(files) {
       
        var fileNames = '' ;
        
-       var formData = new FormData();             // 创建一个表单对象FormData      
+       var formData = new FormData();             // new a FormData      
        for ( var i = 0; i < files.length; i++) {
-             var file = files[i];    // file 对象有 name, size 属性
+             var file = files[i];    // file has name, size attribute
             
-            formData.append( 'file' , file);       // 往FormData对象添加File对象
+            formData.append( 'file' , file);       // append files object in the formData
             
-            fileNames += '《' + file.name + '》, ' ;
+            fileNames += '<' + file.name + '>, ' ;
       }
       
        var xhr = new XMLHttpRequest();
       xhr.upload.addEventListener( 'progress',
              function uploadProgress(evt) {
-                   // evt 有三个属性：
-                   // lengthComputable – 可计算的已上传字节数
-                   // total – 总的字节数
-                   // loaded – 到目前为止上传的字节数
+                   // evt has three attribute:
+                   // lengthComputable - Calculatethenumber of bytes uploaded
+                   // total -The total number of bytes
+                   // loaded -The number of bytes uploaded so far
                    if (evt.lengthComputable) {
                         percent.innerHTML = fileNames + ' upload percent :' + Math.round((evt.loaded / evt.total)  * 100) + '%' ;
                   }
-            }, false); // false表示在事件冒泡阶段处理
+            }, false); 
 
       xhr.upload.onload = function() {
-            percent.innerHTML = fileNames + '上传完成。' ;
+            percent.innerHTML = fileNames + 'Upload complete.' ;
       };
 
       xhr.upload.onerror = function(e) {
-            percent.innerHTML = fileNames + ' 上传失败。' ;
+            percent.innerHTML = fileNames + ' Upload fail.' ;
       };
 
-      formData.append( 'submit', '中文' );  // 往表单对象添加文本字段
+      formData.append( 'submit', 'Submit' );  
       xhr.open( 'post', '/' , true);
       xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-      xhr.send(formData);            // 发送表单对象。
+      xhr.send(formData);            // send formData object.
 }
 
 	if (window.FileReader) {
@@ -246,7 +245,7 @@ function sendFile(files) {
 
 
 
-		// 处理拖放文件列表
+		// handle drag list
 		function handleFileSelect(evt) {
 			evt.stopPropagation();
 			evt.preventDefault();
@@ -263,7 +262,7 @@ function sendFile(files) {
 						
 					};
 
-				// 处理得到的文件
+				// handle the file
 				if (true) {
 					reader.onload = (function (theFile) {
 						return function (e) {
@@ -278,11 +277,11 @@ function sendFile(files) {
 
 		}
 		
-		// 处理插入拖出效果
+		// Handle Drag  insert effects
 		function handleDragEnter(evt){ this.setAttribute('style', 'border-style:dashed;'); }
 		function handleDragLeave(evt){ this.setAttribute('style', ''); }
 
-		// 处理文件拖入事件，防止浏览器默认事件带来的重定向
+		// Processing file into an event,  prevent default browser redirect
 		function handleDragOver(evt) {
 			evt.stopPropagation();
 			evt.preventDefault();
@@ -296,7 +295,7 @@ function sendFile(files) {
 	} 
 	
 	else {
-		document.getElementById('section').innerHTML = '你的浏览器不支持啊，同学';
+		document.getElementById('section').innerHTML = 'Sorry,Your browser does not support!';
 	}
 	
 	</script>""")
